@@ -847,8 +847,16 @@ var CATS = [
   {id:"sad",      name:"Сад и дача",           sub:"саженцы, щепа, подставки"}
 ];
 
+/* в названии сначала ягода, потом яблоко: в колонке из пятнадцати пастил
+   различие должно стоять в начале строки, а не в конце */
+function berryFirst(sub){
+  var m = /^яблоко\s+и\s+(.+)$/i.exec(sub || "");
+  return m ? m[1] + " и яблоко" : sub;
+}
+
 var P = RAW.map(function(r){
-  return {id:r[0],cat:r[1],title:r[2],sub:r[3],weight:r[4],price:r[5],stock:r[6]>0?r[6]:0,art:r[7],color:r[8],desc:r[9]};
+  return {id:r[0],cat:r[1],title:r[2],sub:r[1]==="pastila"?berryFirst(r[3]):r[3],weight:r[4],
+          price:r[5],stock:r[6]>0?r[6]:0,art:r[7],color:r[8],desc:r[9]};
 });
 var BY_ID = {};
 P.forEach(function(p){BY_ID[p.id]=p;});
@@ -1353,7 +1361,7 @@ function compositionOf(p){
   var appleShare = /(\d+)%\s*пюре\s*яблок/.exec(c);
   var apple = appleShare ? appleShare[1] : "70";
   var berryShare = String(100 - parseInt(apple, 10));
-  var flavour = (p.sub || "").replace(/^яблоко\s+и\s+/i, "").trim().toLowerCase();
+  var flavour = (p.sub || "").replace(/\s*и\s+яблоко$/i, "").trim().toLowerCase();
   var gen = GEN[flavour] || flavour;
   if(!gen) return c;
   return apple + "% яблочное пюре, " + berryShare + "% пюре " + gen;
