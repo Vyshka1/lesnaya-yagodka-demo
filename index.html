@@ -113,8 +113,9 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 /* ---------- КНОПКИ ---------- */
 .btn{display:inline-flex; align-items:center; justify-content:center; gap:.6rem; padding:.9rem 1.5rem; font-size:.72rem;
      font-weight:600; letter-spacing:.12em; text-transform:uppercase; border-radius:2px; border:1px solid transparent; cursor:pointer; max-width:100%; transition:.15s ease}
-.btn-green{background:var(--green); color:var(--paper)}
-.btn-green:hover{background:var(--green-deep)}
+/* главное действие — брусничное: зелёная кнопка на зелёном сайте не работает акцентом */
+.btn-primary{background:var(--berry); color:#F6EFEF}
+.btn-primary:hover{background:#5A1D2D}
 .btn-cream{background:var(--sand); color:var(--green-deep)}
 .btn-cream:hover{background:#DAD3C2}
 .btn-ghost{border-color:#4E5B49; color:#CFD6C6; background:none}
@@ -149,6 +150,22 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 }
 
 /* ---------- ПОЛОСА НАЛИЧИЯ ---------- */
+/* принципы производства отдельной полосой, а не мелочью внутри героя */
+.principles{background:var(--paper); border-bottom:1px solid var(--line)}
+.principles .in{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; padding-block:0}
+.principles div{display:flex; flex-direction:column; gap:.3rem; padding:1.6rem 1.4rem; text-align:center;
+                position:relative}
+.principles div + div::before{content:""; position:absolute; left:0; top:1.6rem; bottom:1.6rem;
+                              width:1px; background:var(--line)}
+.principles b{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.12rem; color:var(--ink)}
+.principles span{font-size:.82rem; color:var(--muted); line-height:1.4}
+@media(max-width:820px){
+  .principles .in{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .principles div{padding:1.1rem .8rem}
+  .principles div:nth-child(3)::before,.principles div:nth-child(4)::before{top:0}
+  .principles div:nth-child(3),.principles div:nth-child(4){border-top:1px solid var(--line)}
+  .principles div:nth-child(3)::before{display:none}
+}
 .stockbar{background:var(--sand); border-bottom:1px solid var(--line)}
 .stockbar .in{display:flex; align-items:center; gap:1.2rem; padding-block:.8rem; flex-wrap:wrap}
 .live{display:flex; align-items:center; gap:.5rem; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; font-weight:600; color:var(--green)}
@@ -182,6 +199,10 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .head-row a.more{font-size:.95rem; font-weight:500; letter-spacing:0}
 
 .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.4rem}
+@media(min-width:1000px){.grid.four{grid-template-columns:repeat(4,minmax(0,1fr)); gap:1.2rem}}
+.ready-note{display:flex; align-items:center; gap:.5rem; font-size:.84rem; color:var(--muted); margin:-.6rem 0 1.2rem}
+.live-dot{width:7px; height:7px; border-radius:50%; background:var(--green-live); flex:none;
+          box-shadow:0 0 0 3px rgba(74,122,78,.18)}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.1rem}}
 @media(max-width:520px){.grid{grid-template-columns:minmax(0,1fr)}}
 
@@ -1426,7 +1447,7 @@ function buyControl(p){
       '<button type="button" data-cq="'+p.id+'" data-d="1"'+(max?' disabled':'')+' aria-label="Добавить ещё">+</button>'+
     '</span>';
   }
-  return '<button class="btn btn-green" data-add="'+p.id+'">'+
+  return '<button class="btn btn-primary" data-add="'+p.id+'">'+
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">'+
     '<path d="M5 7h14l-1.2 12.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>В корзину</button>';
 }
@@ -1473,7 +1494,18 @@ function pageHome(){
   var live=inStock().slice(0,4).map(function(p){
     return '<li><b>'+p.title+'</b> '+p.sub+'</li>';
   }).join("");
-  var picks=["z14","v03","p13","t01","v01","m01","y01","v05"].map(function(id){return BY_ID[id];}).filter(Boolean);
+  /* витрина: только то, что можно купить сегодня, и по одному товару из категории —
+     иначе рядом оказываются два одинаковых на вид мармелада */
+  var picks=(function(){
+    var seen={}, out=[];
+    var order=["pastila","zefir","varenye","marmelad","travy","med","nabory","yagody","sad"];
+    order.forEach(function(cat){
+      if(out.length>=4) return;
+      var found=inStock().filter(function(p){return p.cat===cat;})[0];
+      if(found && !seen[cat]){ seen[cat]=1; out.push(found); }
+    });
+    return out.concat(inStock().filter(function(p){return out.indexOf(p)<0;})).slice(0,4);
+  })();
   /* в плитке категории считаем вкусы, а не «штуки на складе»:
      если доступно не всё — говорим честно «3 из 8», иначе просто «8 вкусов» */
   var FLAVOUR_CATS = ["pastila","zefir","marmelad","varenye","travy","med"];
@@ -1504,24 +1536,20 @@ function pageHome(){
       '<p class="eyebrow">Псковская область · собственное производство с 2018 года</p>'+
       '<h1>Пастила, в которой только яблоко и ягода</h1>'+
       '<p class="sub">Без сахара, красителей и консервантов. Сушим при низкой температуре и режем вручную — небольшими партиями, по сезону.</p>'+
-      '<div class="feats">'+
-        '<span class="feat">'+icon("leaf")+'Свои плантации и лесной сбор</span>'+
-        '<span class="feat">'+icon("hand")+'Ручная работа малыми партиями</span>'+
-        '<span class="feat">'+icon("no")+'Без красителей и консервантов</span>'+
-      '</div>'+
       '<div class="hero-cta">'+
-        '<a class="btn btn-cream" href="#/catalog">Смотреть каталог '+
+        '<a class="btn btn-primary" href="#/catalog">Смотреть каталог '+
         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>'+
         '<a class="btn btn-ghost" href="#/about">Как мы это делаем</a>'+
       '</div>'+
     '</div>'+
   '</div></section>'+
 
-  '<div class="stockbar"><div class="in">'+
-    '<span class="live"><i></i>Готово на этой неделе</span>'+
-    '<ul>'+live+'</ul>'+
-    '<a class="all" href="#/catalog">Всё в наличии ('+inStock().length+') →</a>'+
-  '</div></div>'+
+  '<section class="principles"><div class="in">'+
+    '<div><b>Небольшие партии</b><span>варим и режем вручную, по мере сбора</span></div>'+
+    '<div><b>Сезонный выпуск</b><span>каждая ягода в своё время</span></div>'+
+    '<div><b>Ручная работа</b><span>на каждом этапе — от сбора до упаковки</span></div>'+
+    '<div><b>Честный состав</b><span>указан в каждой карточке товара</span></div>'+
+  '</div></section>'+
 
   '<section class="sec"><div class="in">'+
     '<div class="head-row"><h2>Что мы готовим</h2><a class="more" href="#/catalog">Весь каталог ⟶</a></div>'+
@@ -1535,14 +1563,16 @@ function pageHome(){
         '<p class="eyebrow">Из псковских лесов</p>'+
         '<h2>Сила природы в каждом продукте</h2>'+
         '<p>Сырьё выращено на собственных плантациях и собрано в экологически чистых лесах Псковской области — вдали от трасс и городов. Дальше только руки: перебрать, уварить, высушить, упаковать.</p>'+
-        '<a class="btn btn-green" style="align-self:flex-start" href="#/about">Подробнее о производстве</a>'+
+        '<a class="btn btn-primary" style="align-self:flex-start" href="#/about">Подробнее о производстве</a>'+
       '</div>'+
     '</div>'+
   '</section>'+
 
   '<section class="sec"><div class="in">'+
-    '<div class="head-row"><h2>Выбор покупателей</h2><a href="#/catalog">Показать всё →</a></div>'+
-    '<div class="grid">'+picks.map(card).join("")+'</div>'+
+    '<div class="head-row"><h2>Готово на этой неделе</h2>'+
+      '<a class="more" href="#/catalog">Всё в наличии ('+inStock().length+') ⟶</a></div>'+
+    '<p class="ready-note"><i class="live-dot"></i>Сварено и упаковано вручную, отгружаем сразу</p>'+
+    '<div class="grid four">'+picks.map(card).join("")+'</div>'+
   '</div></section>'+
 
   '<section class="setband"><div class="in">'+
@@ -1578,7 +1608,7 @@ function pageHome(){
         '<span class="stat"><b>30%</b><span>ягода</span></span>'+
         '<span class="stat"><b>0%</b><span>добавленного сахара</span></span>'+
       '</div>'+
-      '<a class="btn btn-green" style="align-self:flex-start" href="#/catalog/pastila">Выбрать пастилу</a>'+
+      '<a class="btn btn-primary" style="align-self:flex-start" href="#/catalog/pastila">Выбрать пастилу</a>'+
     '</div>'+
   '</section>'+
 
@@ -1602,7 +1632,7 @@ function pageHome(){
         '<span>'+icon("hand")+'Небольшие партии</span>'+
         '<span>'+icon("plus")+'Контроль качества</span>'+
       '</div>'+
-      '<a class="btn btn-green" style="align-self:flex-start; margin-top:.6rem" href="#/about">Посмотреть производство</a>'+
+      '<a class="btn btn-primary" style="align-self:flex-start; margin-top:.6rem" href="#/about">Посмотреть производство</a>'+
     '</div>'+
     '<div class="collage">'+
       '<div>'+(wideImg('prod1','Сбор голубики на плантации')||art({id:"_a",title:"Сбор",sub:"ягод",art:"berry",color:"#4E5E96"}))+'</div>'+
@@ -1762,7 +1792,7 @@ function pageProduct(id){
     : '<span class="avail out"><i></i>Сейчас не в сезоне</span>';
   var action = p.stock>0
     ? '<div class="qty" id="qty"><button data-q="-1" aria-label="Меньше">−</button><span id="qv">1</span><button data-q="1" aria-label="Больше">+</button></div>'+
-      '<button class="btn btn-green" data-add="'+p.id+'" data-useqty="1">'+
+      '<button class="btn btn-primary" data-add="'+p.id+'" data-useqty="1">'+
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">'+
       '<path d="M5 7h14l-1.2 12.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>В корзину</button>'
     : '<button class="btn btn-out" data-sub="'+p.id+'">'+(subscribed(p.id)?"Вы подписаны":"Сообщить о появлении")+'</button>';
@@ -1922,7 +1952,7 @@ function setTray(){
       '<span class="cnt">'+full+' из '+b.n+' · коробка '+b.price+' ₽</span>'+
       '<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>'+
     '</button>'+
-    '<button class="btn btn-green" data-setcart="1"'+(full<2?' disabled':'')+'>В корзину</button>'+
+    '<button class="btn btn-primary" data-setcart="1"'+(full<2?' disabled':'')+'>В корзину</button>'+
   '</div>';
 }
 function renderSet(){
@@ -1980,7 +2010,7 @@ function pageCart(){
     return '<div class="in"><div class="empty">'+
       '<h2>В корзине пока пусто</h2>'+
       '<p>Загляните в каталог — сейчас в наличии '+inStock().length+' позиций.</p>'+
-      '<a class="btn btn-green" style="margin-top:1.4rem" href="#/catalog">В каталог</a>'+
+      '<a class="btn btn-primary" style="margin-top:1.4rem" href="#/catalog">В каталог</a>'+
       '</div></div>';
   }
   var rows=ids.map(function(id){
@@ -2014,7 +2044,7 @@ function pageCart(){
           '</label>'+
           '<label class="wide">Город и адрес<input placeholder="Санкт-Петербург, ул. ..."></label>'+
           '<label class="wide">Комментарий<textarea rows="3" placeholder="Например: упаковать как подарок"></textarea></label>'+
-          '<button class="btn btn-green wide" type="submit">Оформить заказ на '+money(cartTotal())+'</button>'+
+          '<button class="btn btn-primary wide" type="submit">Оформить заказ на '+money(cartTotal())+'</button>'+
         '</form>'+
         '<p class="formnote">Это демо-макет: форма ничего никуда не отправляет и не сохраняет ваши данные. На настоящем сайте здесь была бы оплата и передача заказа в СДЭК.</p>'+
       '</div>'+
@@ -2107,7 +2137,7 @@ function pageContacts(){
         '<label>Телефон<input type="tel" placeholder="+7 900 000-00-00"></label>'+
         '<label>Почта<input type="email" placeholder="you@mail.ru"></label>'+
         '<label class="wide">Сообщение<textarea rows="4" required placeholder="Вопрос о заказе, сотрудничестве или опте"></textarea></label>'+
-        '<button class="btn btn-green wide" type="submit">Отправить</button>'+
+        '<button class="btn btn-primary wide" type="submit">Отправить</button>'+
       '</form>'+
       '<p class="formnote">Демо-форма: сообщение никуда не уходит.</p>'+
     '</div>'+
@@ -2116,7 +2146,7 @@ function pageContacts(){
 
 function pageNotFound(){
   return '<div class="in"><div class="empty"><h2>Страница не найдена</h2>'+
-    '<p>Возможно, ссылка устарела.</p><a class="btn btn-green" style="margin-top:1.2rem" href="#/">На главную</a></div></div>';
+    '<p>Возможно, ссылка устарела.</p><a class="btn btn-primary" style="margin-top:1.2rem" href="#/">На главную</a></div></div>';
 }
 
 /* --- крупные иллюстрации --- */
@@ -2244,7 +2274,7 @@ document.addEventListener("click",function(e){
       '<p>«'+esc(sp.title+" "+sp.sub)+'» вернётся в продажу в свой сезон. Оставьте контакт — напишем в день, когда партия будет готова.</p>'+
       '<form id="subform" data-id="'+sid+'" style="display:flex; flex-direction:column; gap:.7rem">'+
         '<input name="contact" required placeholder="Почта или телефон" autocomplete="email">'+
-        '<button class="btn btn-green" type="submit">Подписаться</button>'+
+        '<button class="btn btn-primary" type="submit">Подписаться</button>'+
       '</form>'+
       '<p class="modal-note">Демо-макет: контакт сохраняется только в вашем браузере и никуда не отправляется. '+
       'На рабочем сайте он уходил бы на почту магазина.</p>'
@@ -2264,7 +2294,7 @@ document.addEventListener("click",function(e){
         '</span>'+
         '<input name="name" required placeholder="Как вас зовут" maxlength="40">'+
         '<textarea name="text" required rows="4" placeholder="Что понравилось, что нет" maxlength="600"></textarea>'+
-        '<button class="btn btn-green" type="submit">Отправить отзыв</button>'+
+        '<button class="btn btn-primary" type="submit">Отправить отзыв</button>'+
       '</form>'+
       '<p class="modal-note">Демо-макет: отзыв сохраняется в вашем браузере. На рабочем сайте он попадал бы на модерацию.</p>'
     );
@@ -2425,7 +2455,7 @@ document.addEventListener("submit",function(e){
       '<h2>Спасибо! Но это демо</h2>'+
       '<p style="max-width:46ch; margin:.6rem auto 0">Заказ не оформлен и никуда не отправлен — перед вами макет сайта, а не работающий магазин. '+
       'Настоящий заказ можно сделать на действующем сайте lesnaya-yagodka.ru.</p>'+
-      '<a class="btn btn-green" style="margin-top:1.4rem" href="#/catalog">Вернуться в каталог</a></div></div>';
+      '<a class="btn btn-primary" style="margin-top:1.4rem" href="#/catalog">Вернуться в каталог</a></div></div>';
     window.scrollTo(0,0);
   }
   if(e.target.id==="subform"){
