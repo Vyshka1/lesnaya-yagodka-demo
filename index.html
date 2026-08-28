@@ -164,16 +164,22 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .head-row a{font-size:.82rem; color:var(--green); font-weight:600}
 .cats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem}
 @media(max-width:760px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.cat{border:1px solid var(--line); border-radius:2px; overflow:hidden; background:var(--card); display:flex; flex-direction:column; transition:.15s}
+.cat{border:1px solid rgba(214,208,193,.5); border-radius:2px; overflow:hidden; background:var(--card); display:flex; flex-direction:column; transition:.15s}
 .cat{cursor:pointer; transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease}
 .cat:hover{border-color:var(--muted); transform:scale(1.05); z-index:5; box-shadow:0 26px 48px -34px rgba(25,29,24,.55)}
 .cat:active{transform:scale(.95)}
 @media(hover:none){.cat:hover{transform:none; box-shadow:none}}
-.cat .pic{aspect-ratio:1/.82}
-.cat .m{padding:.95rem .9rem 1.1rem; text-align:center; display:flex; flex-direction:column; gap:.15rem}
-.cat .m strong{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.05rem}
-.cat .m span{font-size:.76rem; color:var(--muted)}
-.cat .m em{font-style:normal; font-size:.68rem; color:var(--green); font-weight:600; margin-top:.3rem}
+.cat .pic{aspect-ratio:1/.82; background:var(--sand)}
+.cat .pic.pack{background:#FFFFFF}
+.cat .pic.pack > img{object-fit:contain; padding:.5rem}
+.cat .m{padding:.85rem .9rem .95rem; text-align:center; display:flex; flex-direction:column; gap:.15rem}
+.cat .m strong{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.3rem; line-height:1.2}
+.cat .m span{font-size:.88rem; color:var(--muted); line-height:1.35}
+.cat .m em{font-style:normal; font-size:.84rem; color:var(--berry); font-weight:500; margin-top:.3rem}
+.cat .m .arr{display:inline-block; transition:transform .18s ease}
+.cat:hover .m .arr{transform:translateX(3px)}
+/* ссылка «весь каталог» не должна спорить с заголовком блока */
+.head-row a.more{font-size:.95rem; font-weight:500; letter-spacing:0}
 
 .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.4rem}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.1rem}}
@@ -1468,13 +1474,26 @@ function pageHome(){
     return '<li><b>'+p.title+'</b> '+p.sub+'</li>';
   }).join("");
   var picks=["z14","v03","p13","t01","v01","m01","y01","v05"].map(function(id){return BY_ID[id];}).filter(Boolean);
+  /* в плитке категории считаем вкусы, а не «штуки на складе»:
+     если доступно не всё — говорим честно «3 из 8», иначе просто «8 вкусов» */
+  var FLAVOUR_CATS = ["pastila","zefir","marmelad","varenye","travy","med"];
   var cats=CATS.slice(0,4).map(function(c){
     var sample=P.filter(function(p){return p.cat===c.id;});
     var n=sample.filter(function(p){return p.stock>0;}).length;
+    var isFlavour = FLAVOUR_CATS.indexOf(c.id) >= 0;
+    /* склоняем по тому числу, к которому слово относится: «1 из 15 вкусов», но «7 вкусов» */
+    var word = function(k){
+      return isFlavour ? plural(k, "вкус", "вкуса", "вкусов")
+                       : plural(k, "позиция", "позиции", "позиций");
+    };
+    var count = n === 0 ? "вернётся в сезон"
+              : (n === sample.length ? n + " " + word(n)
+                                     : n + " из " + sample.length + " " + word(sample.length));
+    var first = sample[0];
     return '<a class="cat" href="#/catalog/'+c.id+'">'+
-      '<div class="pic">'+pic(sample[0])+'</div>'+
+      '<div class="pic'+(PACK[first.id]?' pack':'')+'">'+pic(first)+'</div>'+
       '<div class="m"><strong>'+c.name+'</strong><span>'+c.sub+'</span>'+
-      '<em>'+(n>0? n+" в наличии" : "вернётся в сезон")+'</em></div></a>';
+      '<em>'+count+(n>0?' <span class="arr">→</span>':'')+'</em></div></a>';
   }).join("");
 
   return ''+
@@ -1505,7 +1524,7 @@ function pageHome(){
   '</div></div>'+
 
   '<section class="sec"><div class="in">'+
-    '<div class="head-row"><h2>Что мы делаем</h2><a href="#/catalog">Весь каталог →</a></div>'+
+    '<div class="head-row"><h2>Что мы готовим</h2><a class="more" href="#/catalog">Весь каталог ⟶</a></div>'+
     '<div class="cats">'+cats+'</div>'+
   '</div></section>'+
 
