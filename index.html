@@ -276,9 +276,9 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .pc .body{padding:1.15rem 1.2rem 1.25rem; display:flex; flex-direction:column; gap:.5rem; flex:1; position:relative}
 /* ботанический паттерн вкуса — за содержимым карточки */
 .pc .body.pat::before{content:""; position:absolute; inset:0; background-image:var(--pat);
-  background-size:250px 250px; background-repeat:repeat; opacity:.28; pointer-events:none}
+  background-size:250px 250px; background-repeat:repeat; opacity:.17; pointer-events:none}
 .pc .body > *{position:relative; z-index:1}
-.grid.dense .pc .body.pat::before{background-size:170px 170px; opacity:.24}
+.grid.dense .pc .body.pat::before{background-size:170px 170px; opacity:.14}
 .pc h3{font-size:1.18rem; line-height:1.25; cursor:pointer}
 .pc .sub{font-size:.82rem; color:var(--muted); line-height:1.4}
 
@@ -347,7 +347,7 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .berryband{background:var(--tint,var(--sand)); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
            position:relative; overflow:hidden}
 .berryband.pat::before{content:""; position:absolute; inset:0; background-image:var(--pat);
-  background-size:300px 300px; background-repeat:repeat; opacity:.33; pointer-events:none}
+  background-size:300px 300px; background-repeat:repeat; opacity:.2; pointer-events:none}
 .berryband .in{position:relative; z-index:1}
 .berryband .in{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:clamp(1.4rem,4vw,3.5rem);
                align-items:start; padding-block:clamp(2.2rem,4.5vw,3.4rem)}
