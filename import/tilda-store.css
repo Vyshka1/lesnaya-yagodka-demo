@@ -110,32 +110,23 @@
 }
 
 /* ---------- КНОПКА ---------- */
-/* кнопку красит правило вида #recNNNNNN .t-btnflex — бьём по тому же элементу */
+/* Цвет кнопки и цвет её текста Tilda держит сама: они не перебиваются
+   ни по специфичности, ни через !important, ни инлайном — проверено
+   на живом сайте. Их надо задать в настройках блока каталога:
+   Контент → Кнопка → цвет фона #2E3A2C, цвет текста #F2EFE6.
+   Здесь остаётся только то, чего в настройках блока нет.           */
 .t-store .t-store__card__btn,
 .t-store .t-store__card__btn.t-btn,
 .t-store .t-store__card__btn.t-btnflex,
 .t-store .t-btnflex.t-btnflex_type_button{
-  background:var(--ly-green) !important;
-  background-color:var(--ly-green) !important;
-  border-style:solid !important;
-  border-width:1px !important;
-  border-color:var(--ly-green) !important;
   border-radius:2px !important;
-  color:#F2EFE6 !important;
   font-family:var(--ly-sans) !important;
   font-size:.68rem !important;
   letter-spacing:.11em !important;
   text-transform:uppercase !important;
   font-weight:600 !important;
-  transition:background-color .15s ease, transform .15s ease;
-}
-.t-store .t-store__card__btn:hover,
-.t-store .t-btnflex.t-btnflex_type_button:hover{
-  background:var(--ly-green-deep) !important;
-  background-color:var(--ly-green-deep) !important;
 }
 .t-store .t-store__card__btn:active{ transform:scale(.96) }
-.t-store .t-btnflex__text{ color:inherit !important }
 
 /* ---------- КОРЗИНА (T706) ---------- */
 .t706 .t-store__card__title,
