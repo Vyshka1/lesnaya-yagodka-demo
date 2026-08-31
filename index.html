@@ -52,7 +52,7 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 
 .in{width:min(1180px,100% - 2.5rem); margin-inline:auto}
 .eyebrow{font-size:.66rem; letter-spacing:.22em; text-transform:uppercase; font-weight:500; color:var(--muted)}
-.sec{padding-block:clamp(3rem,6vw,5rem)}
+.sec{padding-block:clamp(2.6rem,5vw,4.3rem)}
 .muted{color:var(--muted)}
 .tnum{font-variant-numeric:tabular-nums}
 
@@ -92,6 +92,11 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
   font-size:.9rem; color:var(--ink-2); line-height:1.4; padding:.75rem 0; border-top:1px solid rgba(25,29,24,.13)}
 .setband .steps3 span:last-child{border-bottom:1px solid rgba(25,29,24,.13)}
 .setband .steps3 b{font-family:"Spectral",Georgia,serif; font-size:1.3rem; font-weight:300; color:var(--green)}
+/* один снимок вместо наложенных друг на друга: коллаж читался как монтаж */
+.setshot{margin:0; border-radius:2px; overflow:hidden; background:var(--card);
+  border:1px solid rgba(25,29,24,.1); box-shadow:0 30px 50px -34px rgba(25,29,24,.5)}
+.setshot img{width:100%; aspect-ratio:1/.84; object-fit:cover; display:block}
+@media(max-width:820px){.setshot{max-width:460px; margin-inline:auto}}
 /* подарок показан собранным, а не тремя одинаковыми снимками рядом */
 .setcompose{position:relative; aspect-ratio:1/.84; min-width:0}
 .setcompose figure{position:absolute; margin:0; border-radius:2px; overflow:hidden; background:var(--card)}
@@ -146,19 +151,24 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .hero .bg img,.hero .bg svg{width:100%; height:100%; object-fit:cover}
 /* затемняем ровно настолько, чтобы читался текст: фотография сбора должна остаться видимой */
 .hero .bg::after{content:""; position:absolute; inset:0;
-  background:linear-gradient(100deg,rgba(16,20,15,.8) 0%,rgba(18,23,17,.74) 34%,rgba(20,26,19,.5) 58%,rgba(20,26,19,.24) 80%,rgba(20,26,19,.1) 100%)}
-.hero .in{position:relative; min-height:clamp(430px,60vh,600px); display:flex; align-items:center; padding-block:3.4rem}
+  background:linear-gradient(100deg,rgba(16,20,15,.9) 0%,rgba(18,23,17,.82) 34%,rgba(20,26,19,.5) 58%,rgba(20,26,19,.2) 80%,rgba(20,26,19,.06) 100%)}
+.hero .in{position:relative; min-height:clamp(520px,70vh,680px); display:flex; align-items:center; padding-block:4rem}
 .hero-copy{max-width:min(580px,100%)}
-.hero h1{color:#EDE9DF; font-size:clamp(2.1rem,4.8vw,3.5rem); line-height:1.05; margin-block:1rem 1.1rem}
+.hero h1{color:#EDE9DF; font-size:clamp(2.2rem,5vw,3.7rem); line-height:1.04; margin-block:1.5rem 1.5rem}
 .hero .eyebrow{color:#A9B79F}
-.hero p.sub{color:#D2D8CA; max-width:32ch; font-size:clamp(1.02rem,1.5vw,1.2rem); line-height:1.45}
+.hero p.sub{color:#D2D8CA; max-width:29ch; font-size:clamp(1.02rem,1.5vw,1.2rem); line-height:1.5}
 .feats{display:flex; gap:1.6rem; margin-top:1.9rem; flex-wrap:wrap}
 .feat{display:flex; flex-direction:column; gap:.45rem; max-width:120px; color:#CFD6C6; font-size:.74rem; line-height:1.35}
 .feat svg{color:#A9B79F}
-.hero-cta{display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap}
+.hero-cta{display:flex; gap:1.4rem; align-items:center; margin-top:2.6rem; flex-wrap:wrap}
+/* второе действие не должно спорить с первым: это ссылка, а не кнопка */
+.hero .btn-ghost{border-color:transparent; background:none; padding:.2rem 0;
+  text-decoration:underline; text-underline-offset:7px; text-decoration-thickness:1px;
+  text-decoration-color:rgba(233,229,218,.4)}
+.hero .btn-ghost:hover{background:none; text-decoration-color:rgba(233,229,218,.9)}
 @media(max-width:820px){
   .hero .bg::after{background:linear-gradient(180deg,rgba(16,20,15,.42) 0%,rgba(18,23,17,.8) 52%,rgba(18,23,17,.92) 100%)}
-  .hero .in{min-height:430px; padding-block:2.4rem 2.8rem; align-items:flex-end}
+  .hero .in{min-height:500px; padding-block:2.4rem 3rem; align-items:flex-end}
 }
 
 /* ---------- ПОЛОСА НАЛИЧИЯ ---------- */
@@ -688,14 +698,16 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .sc .arr{display:inline-block; transition:transform .18s ease}
 .sc:hover .arr{transform:translateX(3px)}
 .sc-lead{grid-row:1/3; flex-direction:column}
-.sc-lead .pic{aspect-ratio:1/.78}
+.sc-lead .pic{aspect-ratio:1/.68}
 .sc-lead .m{padding:1.4rem 1.5rem 1.6rem}
 .sc-lead .m strong{font-size:clamp(1.7rem,2.7vw,2.25rem)}
 .sc-lead .m .s{font-size:.95rem}
 .sc-side{flex-direction:row}
 .sc-side .pic{width:42%; aspect-ratio:1/1}
 .sc-wide{grid-column:1/-1; flex-direction:row}
-.sc-wide .pic{width:32%; aspect-ratio:1/.58}
+/* банка вертикальная: показываем её целиком, иначе кадр режет крышку и дно */
+.sc-wide .pic{width:33%; aspect-ratio:1/.74; background:var(--card)}
+.sc-wide .pic > img{object-fit:contain; padding:.7rem}
 @media(max-width:760px){
   .showcase{grid-template-columns:minmax(0,1fr)}
   .sc-lead{grid-row:auto}
@@ -705,7 +717,7 @@ body{display:flex; flex-direction:column; min-height:100vh}
 }
 
 /* ---------- ГЛАВНАЯ: ПОЧЕМУ ЭТО ДРУГОЙ ПРОДУКТ ---------- */
-.value{background:var(--paper); border-block:1px solid var(--line); position:relative; overflow:hidden}
+.value{background:var(--card); border-block:1px solid var(--line); position:relative; overflow:hidden}
 .value.pat::before{content:""; position:absolute; inset:0; background-image:var(--pat);
   background-size:430px 430px; background-repeat:repeat; opacity:.085; pointer-events:none}
 .value .in{position:relative; z-index:1; display:grid;
@@ -719,21 +731,41 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .bigstats b{font-family:"Spectral",Georgia,serif; font-weight:300; line-height:1; color:var(--green);
   font-size:clamp(1.9rem,4vw,2.8rem)}
 .bigstats i{font-style:normal; font-size:.76rem; color:var(--muted); line-height:1.3}
-.value-list{display:flex; flex-direction:column; gap:.45rem; margin-bottom:1.5rem}
-.value-list span{font-size:.86rem; color:var(--ink-2); line-height:1.4}
-.value-list b{font-weight:600; color:var(--ink)}
+/* оговорка к 70/30: у грушевой пастилы пропорция другая, и молчать об этом нельзя */
+.statnote{font-size:.78rem; color:var(--muted); line-height:1.45; margin-bottom:1.6rem; max-width:44ch}
 .value-pic{border:1px solid var(--line); background:var(--card); overflow:hidden; border-radius:2px}
 .value-pic img{width:100%; aspect-ratio:1/.8; object-fit:cover; display:block}
 @media(max-width:820px){.value .in{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- ГЛАВНАЯ: ОТКУДА ---------- */
-.origin{background:var(--sand); border-bottom:1px solid var(--line)}
+/* тёмный природный блок — последняя сильная нота страницы */
+.origin{background:var(--green-deep); color:#D6DCCE}
+.origin .in{padding-block:clamp(2.8rem,5.5vw,4.4rem)}
+.origin .eyebrow{color:#9DAE93}
+.origin-t h2{color:#EDE9DF}
+.origin-t p{color:#BFC7B8}
+.origin figcaption{color:#8E9A84}
+.origin .place{color:#A9B79F}
+.origin .ph{background:#1E2620}
+.origin .flow{border-top:1px solid rgba(233,229,218,.14); padding-top:clamp(1.8rem,3vw,2.6rem)}
+.origin .f + .f{border-left-color:rgba(233,229,218,.14)}
+.origin .f .n{color:#8E9A84}
+.origin .f h4{color:#EDE9DF}
+.origin .f p{color:#A8B29E}
+.origin .f .ph{border:0}
+.origin .flowwrap{padding-top:0}
+@media(max-width:820px){
+  .origin .f:nth-child(n+3){border-top-color:rgba(233,229,218,.14)}
+}
+@media(max-width:430px){
+  .origin .f + .f{border-top-color:rgba(233,229,218,.14)}
+}
 .origin .in{display:grid; grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);
   gap:clamp(1.6rem,4vw,3.2rem); align-items:start; padding-block:clamp(2.8rem,5.5vw,4.4rem)}
 .origin figure{margin:0; display:flex; flex-direction:column; gap:.5rem; min-width:0}
 .origin .ph{overflow:hidden; border-radius:2px; background:var(--card)}
 .origin .ph img{width:100%; height:100%; object-fit:cover; display:block}
-.origin .big .ph{aspect-ratio:1/.7}
+.origin .big .ph{aspect-ratio:1/.62}
 .origin figcaption{font-size:.72rem; letter-spacing:.11em; text-transform:uppercase; color:var(--muted)}
 .origin-t h2{font-size:clamp(1.8rem,3.6vw,2.7rem); line-height:1.06; margin-block:.7rem .9rem}
 .origin-t p{color:var(--ink-2); font-size:.98rem; max-width:42ch}
@@ -747,7 +779,7 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .flow{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(1rem,2.2vw,1.8rem)}
 .f{display:flex; flex-direction:column; gap:.65rem; min-width:0}
 .f + .f{padding-left:clamp(1rem,2.2vw,1.8rem); border-left:1px solid var(--line)}
-.f .ph{aspect-ratio:4/3; overflow:hidden; border-radius:2px; background:var(--sand)}
+.f .ph{aspect-ratio:1/1; overflow:hidden; border-radius:2px; background:var(--sand)}
 .f .ph img{width:100%; height:100%; object-fit:cover; display:block}
 .f .n{font-size:.7rem; letter-spacing:.18em; color:var(--muted); font-weight:600}
 .f h4{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.1rem; line-height:1.2}
@@ -757,9 +789,21 @@ body{display:flex; flex-direction:column; min-height:100vh}
   .f + .f{padding-left:0; border-left:0}
   .f:nth-child(n+3){padding-top:1.2rem; border-top:1px solid var(--line)}
 }
-@media(max-width:430px){.flow{grid-template-columns:minmax(0,1fr)}
+/* на телефоне держим два столбца: в одну колонку четыре шага растягивают блок вдвое */
+@media(max-width:359px){.flow{grid-template-columns:minmax(0,1fr)}
   .f:nth-child(n+3){padding-top:0; border-top:0}
   .f + .f{padding-top:1.2rem; border-top:1px solid var(--line)}}
+
+/* ---------- ГЛАВНАЯ: тихая карточка ---------- */
+/* «собрано вручную» сказано один раз над подборкой — на каждой карточке это шум */
+.pc-clean .body{padding:1rem 0 0; gap:.55rem}
+.pc-clean{background:none; border:0; border-radius:0}
+.pc-clean:hover{box-shadow:none; transform:none; border:0}
+.pc-clean .pic{aspect-ratio:1/1; border:1px solid var(--line-2); border-radius:2px; background:var(--card)}
+.pc-clean:hover .pic{border-color:var(--muted)}
+.pc-clean h3{font-size:1.08rem; line-height:1.25}
+.pc-clean .buy{border-top:0; padding-top:0; align-items:center}
+.pc-clean .pc-top{left:.7rem; right:.7rem; top:.7rem; justify-content:flex-start}
 </style>
 
 <div class="demobar">
@@ -1555,6 +1599,22 @@ function card(p){
     '</div></article>';
 }
 
+/* карточка для главной: фотография, имя, вес, цена. Всё остальное — на странице товара */
+function cardClean(p){
+  var pill = (p.stock > 0 && p.stock <= 6)
+    ? '<div class="pc-top"><span class="pill few">'+icon("leaf")+'Осталось '+p.stock+'</span></div>' : '';
+  return '<article class="pc pc-clean" data-go="#/p/'+p.id+'" role="link" tabindex="0" '+
+    'aria-label="'+esc(p.title+' '+p.sub+', '+money(p.price))+'">'+
+    '<div class="pic">'+pill+pic(p)+'</div>'+
+    '<div class="body">'+
+      '<h3>'+p.title+' '+p.sub+'</h3>'+
+      '<div class="buy">'+
+        '<span><span class="vol">'+p.weight+'</span><span class="price tnum">'+money(p.price)+'</span></span>'+
+        '<span class="buyctrl" data-for="'+p.id+'">'+buyControl(p)+'</span>'+
+      '</div>'+
+    '</div></article>';
+}
+
 function inStock(){ return P.filter(function(p){return p.stock>0;}); }
 
 /* ================= СТРАНИЦЫ ================= */
@@ -1601,10 +1661,10 @@ function pageHome(){
   var arrow = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>';
 
   /* четыре шага производства, у каждого своя фотография */
-  var FLOW = [["01","Сбор","alt1","Ягоды и травы со своих плантаций и из псковских лесов."],
-              ["02","Перебор","rev","Вручную, ягода за ягодой. Дальше увариваем пюре."],
-              ["03","Низкая температура","prod2","Сушим долго и не горячо — вкус и цвет остаются на месте."],
-              ["04","Упаковка","prod3","Собираем и упаковываем руками, партия за партией."]];
+  var FLOW = [["01","Сбор","alt1","Своя плантация и псковские леса."],
+              ["02","Пюре","rev","Перебираем вручную и увариваем."],
+              ["03","Сушка","comp","Долго и не горячо — цвет остаётся."],
+              ["04","Упаковка","prod3","Режем и складываем руками."]];
   var flow = FLOW.map(function(f){
     return '<div class="f"><div class="ph">'+(wideImg(f[2], f[1])||"")+'</div>'+
       '<span class="n">'+f[0]+'</span><h4>'+f[1]+'</h4><p>'+f[3]+'</p></div>';
@@ -1618,7 +1678,7 @@ function pageHome(){
     '<div class="hero-copy">'+
       '<p class="eyebrow">Псковская область · собственное производство с 2018 года</p>'+
       '<h1>Пастила, в которой только яблоко и ягода</h1>'+
-      '<p class="sub">Без сахара, красителей и консервантов. Готовим вручную небольшими партиями в Псковской области.</p>'+
+      '<p class="sub">Без сахара, красителей и консервантов. Готовим вручную небольшими партиями.</p>'+
       '<div class="hero-cta">'+
         '<a class="btn btn-primary" href="#/catalog">Смотреть каталог '+arrow+'</a>'+
         '<a class="btn btn-ghost" href="#/about">Как мы это делаем</a>'+
@@ -1639,8 +1699,8 @@ function pageHome(){
   '<section class="sec sand"><div class="in">'+
     '<div class="head-row"><h2>Сейчас в наличии</h2>'+
       '<a class="more" href="#/catalog">Всё в наличии ('+inStock().length+') &#10230;</a></div>'+
-    '<p class="ready-note"><i class="live-dot"></i>Сварено и упаковано вручную, отгружаем сразу</p>'+
-    '<div class="grid four">'+picks.map(card).join("")+'</div>'+
+    '<p class="ready-note"><i class="live-dot"></i>Собрано и упаковано вручную · отправляем сразу</p>'+
+    '<div class="grid four">'+picks.map(cardClean).join("")+'</div>'+
   '</div></section>'+
 
   /* ---------- 4. собрать подарок ---------- */
@@ -1657,63 +1717,45 @@ function pageHome(){
       '</div>'+
       '<a class="btn btn-primary" style="margin-top:1.8rem" href="#/set">Собрать набор '+arrow+'</a>'+
     '</div>'+
-    '<div class="setcompose">'+
-      '<figure class="base">'+(BY_ID.p15?pic(BY_ID.p15):"")+'</figure>'+
-      '<figure class="top">'+(BY_ID.z13?pic(BY_ID.z13):"")+'</figure>'+
-      '<figure class="jar">'+(BY_ID.v03?pic(BY_ID.v03):"")+'</figure>'+
-    '</div>'+
+    '<figure class="setshot">'+(BY_ID.m01?pic(BY_ID.m01):"")+'</figure>'+
   '</div></section>'+
 
   /* ---------- 5. почему это стоит своих денег ---------- */
   '<section class="value'+(PAT.apple?' pat pat-apple':'')+'"><div class="in">'+
     '<div>'+
-      '<p class="eyebrow">Почему это другой продукт</p>'+
+      '<p class="eyebrow">Состав</p>'+
       '<h2>Пастила: яблоко, ягода и больше ничего</h2>'+
-      '<p>Пюре увариваем и сушим сутками. Яблоко даёт основу и естественную сладость, ягода — вкус, '+
-      'кислотность и цвет. Сахар, красители и консерванты не нужны: состав указан в каждой карточке.</p>'+
+      '<p>Пюре увариваем и сушим сутками. Яблоко даёт основу и естественную сладость, '+
+      'ягода — вкус, кислотность и цвет.</p>'+
       '<div class="bigstats">'+
         '<span><b>70%</b><i>яблочное пюре</i></span>'+
         '<span><b>30%</b><i>пюре ягоды</i></span>'+
         '<span><b>0%</b><i>добавленного сахара</i></span>'+
       '</div>'+
-      '<div class="value-list">'+
-        '<span><b>Небольшие партии.</b> Варим и режем вручную, по мере сбора.</span>'+
-        '<span><b>Сезонный выпуск.</b> Каждая ягода выходит в своё время.</span>'+
-      '</div>'+
+      '<p class="statnote">Так устроены четырнадцать вкусов из пятнадцати. В грушевой пастиле '+
+      'яблока и груши поровну — состав указан в каждой карточке.</p>'+
       '<a class="btn btn-primary" style="align-self:flex-start" href="#/catalog/pastila">Выбрать пастилу</a>'+
     '</div>'+
     '<div class="value-pic">'+(wideImg('p14','Коробка пастилы: рулетики разных вкусов')||"")+'</div>'+
   '</div></section>'+
 
-  /* ---------- 6. кто это делает ---------- */
-  '<section class="origin"><div class="in">'+
-    '<figure class="big"><div class="ph">'+
-      (wideImg('story','Плантация голубики в Псковской области')||forestArt())+
-    '</div><figcaption>Плантация голубики · август</figcaption></figure>'+
-    '<div class="origin-t">'+
-      '<p class="eyebrow">Не закупаем готовое сырьё</p>'+
-      '<h2>Собираем здесь.<br>Готовим здесь.</h2>'+
-      '<p>Часть ягод выращиваем сами, часть собираем в лесах Псковской области — вдали от трасс и городов. '+
-      'Поэтому ассортимент меняется вместе с сезоном.</p>'+
-      '<p class="place">Переслегино · Псковская область</p>'+
-      '<div class="origin-mini">'+
-        '<figure><div class="ph">'+(wideImg('about','Саженцы голубики в питомнике')||"")+'</div>'+
-          '<figcaption>Питомник · саженцы</figcaption></figure>'+
-        '<figure><div class="ph">'+(wideImg('comp','Пастила после сушки')||"")+'</div>'+
-          '<figcaption>Сушка · пастила</figcaption></figure>'+
+  /* ---------- 6. кто и как это делает ---------- */
+  '<section class="origin">'+
+    '<div class="in">'+
+      '<figure class="big"><div class="ph">'+
+        (wideImg('alt2','Лесная земляника в ящиках сразу после сбора')||forestArt())+
+      '</div><figcaption>После сбора · лесная земляника</figcaption></figure>'+
+      '<div class="origin-t">'+
+        '<p class="eyebrow">Не закупаем готовое сырьё</p>'+
+        '<h2>Собираем здесь.<br>Готовим здесь.</h2>'+
+        '<p>Часть ягод выращиваем сами, часть собираем в лесах Псковской области. '+
+        'Поэтому ассортимент меняется вместе с сезоном.</p>'+
+        '<p class="place">Переслегино · Псковская область</p>'+
       '</div>'+
     '</div>'+
-  '</div></section>'+
-
-  /* ---------- 7. как именно ---------- */
-  '<section class="sec"><div class="in">'+
-    '<div class="head-row"><div><h2>Как мы это делаем</h2>'+
-      '<p class="lead">От куста до коробки — четыре шага и ни одного цеха на аутсорсе.</p></div>'+
-      '<a class="more" href="#/about">О производстве &#10230;</a></div>'+
-    '<div class="flow">'+flow+'</div>'+
-  '</div></section>';
+    '<div class="in flowwrap"><div class="flow">'+flow+'</div></div>'+
+  '</section>';
 }
-
 /* --- состояние каталога --- */
 var VIEW_KEY="ly_view_v1";
 var CAT_STATE={cat:"all", only:false, sort:"stock", q:"", dense:false, price:"all", nosugar:false, nocolor:false, filtersOpen:false};
