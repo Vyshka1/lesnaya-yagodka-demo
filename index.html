@@ -87,7 +87,7 @@ input,select,textarea{font-family:inherit; font-size:.9rem; color:var(--ink)}
 .setband h2{color:var(--ink); font-size:clamp(1.7rem,3.6vw,2.6rem); margin-block:.7rem .9rem}
 .setband p{color:var(--ink-2); max-width:44ch; font-size:.98rem}
 .setband .eyebrow{color:var(--green)}
-.setband .steps3{display:flex; flex-direction:column; margin-top:1.7rem; max-width:420px}
+.setband .steps3{display:flex; flex-direction:column; margin-top:0; max-width:460px; align-self:center}
 .setband .steps3 span{display:grid; grid-template-columns:2.4rem 1fr; align-items:baseline; gap:.5rem;
   font-size:.9rem; color:var(--ink-2); line-height:1.4; padding:.75rem 0; border-top:1px solid rgba(25,29,24,.13)}
 .setband .steps3 span:last-child{border-bottom:1px solid rgba(25,29,24,.13)}
@@ -690,7 +690,7 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .sc .pic.pack{background:#FFFFFF}
 .sc .pic > img{width:100%; height:100%; object-fit:cover; display:block}
 .sc .pic.pack > img{object-fit:contain; padding:.6rem}
-.sc .m{padding:1.05rem 1.15rem 1.15rem; display:flex; flex-direction:column; gap:.18rem;
+.sc .m{padding:.95rem 1.1rem 1rem; display:flex; flex-direction:column; gap:.15rem;
   justify-content:center; min-width:0}
 .sc .m strong{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.35rem; line-height:1.15}
 .sc .m .s{font-size:.86rem; color:var(--muted); line-height:1.35}
@@ -698,15 +698,15 @@ body{display:flex; flex-direction:column; min-height:100vh}
 .sc .arr{display:inline-block; transition:transform .18s ease}
 .sc:hover .arr{transform:translateX(3px)}
 .sc-lead{grid-row:1/3; flex-direction:column}
-.sc-lead .pic{aspect-ratio:1/.68}
-.sc-lead .m{padding:1.4rem 1.5rem 1.6rem}
+.sc-lead .pic{aspect-ratio:1/.58}
+.sc-lead .m{padding:1.2rem 1.4rem 1.3rem}
 .sc-lead .m strong{font-size:clamp(1.7rem,2.7vw,2.25rem)}
 .sc-lead .m .s{font-size:.95rem}
 .sc-side{flex-direction:row}
-.sc-side .pic{width:42%; aspect-ratio:1/1}
+.sc-side .pic{width:40%; aspect-ratio:1/.86}
 .sc-wide{grid-column:1/-1; flex-direction:row}
 /* банка вертикальная: показываем её целиком, иначе кадр режет крышку и дно */
-.sc-wide .pic{width:33%; aspect-ratio:1/.74; background:var(--card)}
+.sc-wide .pic{width:30%; aspect-ratio:1/.66; background:var(--card)}
 .sc-wide .pic > img{object-fit:contain; padding:.7rem}
 @media(max-width:760px){
   .showcase{grid-template-columns:minmax(0,1fr)}
@@ -794,16 +794,6 @@ body{display:flex; flex-direction:column; min-height:100vh}
   .f:nth-child(n+3){padding-top:0; border-top:0}
   .f + .f{padding-top:1.2rem; border-top:1px solid var(--line)}}
 
-/* ---------- ГЛАВНАЯ: тихая карточка ---------- */
-/* «собрано вручную» сказано один раз над подборкой — на каждой карточке это шум */
-.pc-clean .body{padding:1rem 0 0; gap:.55rem}
-.pc-clean{background:none; border:0; border-radius:0}
-.pc-clean:hover{box-shadow:none; transform:none; border:0}
-.pc-clean .pic{aspect-ratio:1/1; border:1px solid var(--line-2); border-radius:2px; background:var(--card)}
-.pc-clean:hover .pic{border-color:var(--muted)}
-.pc-clean h3{font-size:1.08rem; line-height:1.25}
-.pc-clean .buy{border-top:0; padding-top:0; align-items:center}
-.pc-clean .pc-top{left:.7rem; right:.7rem; top:.7rem; justify-content:flex-start}
 </style>
 
 <div class="demobar">
@@ -1599,39 +1589,10 @@ function card(p){
     '</div></article>';
 }
 
-/* карточка для главной: фотография, имя, вес, цена. Всё остальное — на странице товара */
-function cardClean(p){
-  var pill = (p.stock > 0 && p.stock <= 6)
-    ? '<div class="pc-top"><span class="pill few">'+icon("leaf")+'Осталось '+p.stock+'</span></div>' : '';
-  return '<article class="pc pc-clean" data-go="#/p/'+p.id+'" role="link" tabindex="0" '+
-    'aria-label="'+esc(p.title+' '+p.sub+', '+money(p.price))+'">'+
-    '<div class="pic">'+pill+pic(p)+'</div>'+
-    '<div class="body">'+
-      '<h3>'+p.title+' '+p.sub+'</h3>'+
-      '<div class="buy">'+
-        '<span><span class="vol">'+p.weight+'</span><span class="price tnum">'+money(p.price)+'</span></span>'+
-        '<span class="buyctrl" data-for="'+p.id+'">'+buyControl(p)+'</span>'+
-      '</div>'+
-    '</div></article>';
-}
-
 function inStock(){ return P.filter(function(p){return p.stock>0;}); }
 
 /* ================= СТРАНИЦЫ ================= */
 function pageHome(){
-  /* витрина наличия: по одному товару из категории, иначе рядом окажутся
-     два одинаковых на вид мармелада */
-  var picks=(function(){
-    var seen={}, out=[];
-    var order=["pastila","zefir","varenye","marmelad","travy","med","yagody","sad"];
-    order.forEach(function(cat){
-      if(out.length>=4) return;
-      var found=inStock().filter(function(p){return p.cat===cat;})[0];
-      if(found && !seen[cat]){ seen[cat]=1; out.push(found); }
-    });
-    return out.concat(inStock().filter(function(p){return out.indexOf(p)<0;})).slice(0,4);
-  })();
-
   /* витрина категорий разного размера: пастила — главный продукт, ей вся левая колонка */
   var SHOW = [{id:"pastila", cls:"sc-lead", img:"p13"},
               {id:"zefir",   cls:"sc-side", img:"z01"},
@@ -1648,9 +1609,10 @@ function pageHome(){
     var word = function(k){ return isFlavour ? plural(k,"вкус","вкуса","вкусов")
                                              : plural(k,"позиция","позиции","позиций"); };
     var many = isFlavour ? "вкусов" : "позиций";
+    /* «в наличии» договаривает мысль: без него «1 из 15 вкусов» читается как ассортимент */
     var count = n === 0 ? "вернётся в сезон"
-              : (n === sample.length ? n + " " + word(n)
-                                     : n + " из " + sample.length + " " + many);
+              : (n === sample.length ? n + " " + word(n) + " в наличии"
+                                     : n + " из " + sample.length + " " + many + " в наличии");
     var shot = BY_ID[sc.img] || sample[0];
     return '<a class="sc '+sc.cls+'" href="#/catalog/'+c.id+'">'+
       '<span class="pic'+(PACK[shot.id]?' pack':'')+'">'+pic(shot)+'</span>'+
@@ -1661,8 +1623,8 @@ function pageHome(){
   var arrow = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>';
 
   /* четыре шага производства, у каждого своя фотография */
-  var FLOW = [["01","Сбор","alt1","Своя плантация и псковские леса."],
-              ["02","Пюре","rev","Перебираем вручную и увариваем."],
+  var FLOW = [["01","Сбор","prod1","Своя плантация и псковские леса."],
+              ["02","Пюре","alt1","Перебираем вручную и увариваем."],
               ["03","Сушка","comp","Долго и не горячо — цвет остаётся."],
               ["04","Упаковка","prod3","Режем и складываем руками."]];
   var flow = FLOW.map(function(f){
@@ -1695,14 +1657,6 @@ function pageHome(){
     '<div class="showcase">'+showcase+'</div>'+
   '</div></section>'+
 
-  /* ---------- 3. что есть сегодня ---------- */
-  '<section class="sec sand"><div class="in">'+
-    '<div class="head-row"><h2>Сейчас в наличии</h2>'+
-      '<a class="more" href="#/catalog">Всё в наличии ('+inStock().length+') &#10230;</a></div>'+
-    '<p class="ready-note"><i class="live-dot"></i>Собрано и упаковано вручную · отправляем сразу</p>'+
-    '<div class="grid four">'+picks.map(cardClean).join("")+'</div>'+
-  '</div></section>'+
-
   /* ---------- 4. собрать подарок ---------- */
   '<section class="setband"><div class="in">'+
     '<div>'+
@@ -1710,14 +1664,13 @@ function pageHome(){
       '<h2>Соберите набор своими руками</h2>'+
       '<p>Выберите коробку и положите в неё то, что нравится: пастилу, зефир, мармелад, варенье или травы. '+
       'Кладём только то, что сварено и есть в наличии сегодня.</p>'+
-      '<div class="steps3">'+
-        '<span><b>01</b>Выбираете коробку — на 3, 6 или 9 позиций</span>'+
-        '<span><b>02</b>Складываете в неё что хотите</span>'+
-        '<span><b>03</b>Собираем вручную в день заказа</span>'+
-      '</div>'+
-      '<a class="btn btn-primary" style="margin-top:1.8rem" href="#/set">Собрать набор '+arrow+'</a>'+
+      '<a class="btn btn-primary" style="margin-top:1.6rem" href="#/set">Собрать набор '+arrow+'</a>'+
     '</div>'+
-    '<figure class="setshot">'+(BY_ID.m01?pic(BY_ID.m01):"")+'</figure>'+
+    '<div class="steps3">'+
+      '<span><b>01</b>Выбираете коробку — на 3, 6 или 9 позиций</span>'+
+      '<span><b>02</b>Складываете в неё что хотите</span>'+
+      '<span><b>03</b>Собираем вручную в день заказа</span>'+
+    '</div>'+
   '</div></section>'+
 
   /* ---------- 5. почему это стоит своих денег ---------- */
