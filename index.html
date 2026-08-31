@@ -782,6 +782,29 @@ body{display:flex; flex-direction:column; min-height:100vh}
 /* на телефоне держим два столбца: в одну колонку четыре шага растягивают блок вдвое */
 @media(max-width:359px){.flow{grid-template-columns:minmax(0,1fr)}}
 
+
+/* ---------- СЛУЖЕБНАЯ СТРАНИЦА ---------- */
+/* прокрутка широкой таблицы живёт в обёртке, а не распирает страницу */
+.wrap-x{overflow-x:auto; max-width:100%}
+.admcards{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem}
+.admcard{border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.2rem; background:var(--card);
+  display:flex; flex-direction:column; gap:.25rem}
+.admcard b{font-family:"Spectral",Georgia,serif; font-weight:400; font-size:1.6rem; line-height:1.1; color:var(--green)}
+.admcard span{font-size:.78rem; color:var(--muted)}
+.admtable{width:100%; border-collapse:collapse; font-size:.84rem; min-width:640px}
+.admtable th,.admtable td{text-align:left; padding:.6rem .6rem; border-bottom:1px solid var(--line-2); vertical-align:top}
+.admtable th{font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600;
+  position:sticky; top:0; background:var(--paper)}
+.admtable tbody tr:hover{background:var(--card)}
+.stockin{width:72px; padding:.4rem .5rem; border:1px solid var(--line); border-radius:2px;
+  background:var(--card); color:inherit; font:inherit; text-align:center}
+.stockin:focus{outline:2px solid var(--green); outline-offset:1px}
+.statusin{width:100%; padding:.4rem .5rem; border:1px solid var(--line); border-radius:2px;
+  background:var(--card); color:inherit; font:inherit; font-size:.82rem}
+.stockmark{font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600; white-space:nowrap}
+.stockmark.ok{color:var(--green-live)}
+.stockmark.few{color:var(--honey)}
+.stockmark.out{color:var(--berry)}
 </style>
 
 <div class="demobar">
@@ -853,7 +876,7 @@ body{display:flex; flex-direction:column; min-height:100vh}
           <li><a href="#/delivery">Возврат и обмен</a></li>
           <li><a href="#/about">О производстве</a></li>
           <li><a href="#/contacts">Контакты</a></li>
-          <li><a href="#/admin">Что собрал сайт</a></li>
+          <li><a href="#/admin">Панель управления</a></li>
         </ul>
       </div>
       <div>
@@ -1441,9 +1464,43 @@ function load(key, def){
 function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
 
 var SUBS_KEY="ly_subs_v1", REVS_KEY="ly_revs_v1", SETS_KEY="ly_sets_v1";
+var ORDERS_KEY="ly_orders_v1", STOCK_KEY="ly_stock_v1";
 var subs = load(SUBS_KEY, []);       /* [{id,title,contact,ts}] */
 var revs = load(REVS_KEY, {});       /* {productId:[{name,rating,text,ts}]} */
 var sets = load(SETS_KEY, {});       /* {setKey:{box,items:[id],price}} */
+var orders = load(ORDERS_KEY, []);   /* [{n,ts,name,phone,email,ship,addr,note,items,sum,status}] */
+var stockOv = load(STOCK_KEY, {});   /* правки наличия поверх исходных данных */
+
+/* остаток, поправленный в служебной странице, важнее того, что записано в каталоге */
+P.forEach(function(p){
+  if(Object.prototype.hasOwnProperty.call(stockOv, p.id)) p.stock = Math.max(0, stockOv[p.id] | 0);
+});
+function setStock(id, n){
+  var p = BY_ID[id]; if(!p) return;
+  p.stock = Math.max(0, n | 0);
+  stockOv[id] = p.stock;
+  save(STOCK_KEY, stockOv);
+}
+var ORDER_STATUS = ["Новый", "Собран", "Отправлен", "Отменён"];
+function addOrder(o){
+  o.n = orders.length ? orders[orders.length-1].n + 1 : 1001;
+  orders.push(o); save(ORDERS_KEY, orders);
+  /* заказ уменьшает остаток: иначе наличие на витрине разойдётся с заказами */
+  o.items.forEach(function(it){ var p = BY_ID[it.id]; if(p) setStock(it.id, p.stock - it.qty); });
+  return o.n;
+}
+/* покупатели выводятся из заказов: отдельного списка на таком сайте не бывает */
+function customers(){
+  var by = {};
+  orders.forEach(function(o){
+    var key = (o.phone || o.email || o.name).replace(/[^0-9a-zA-Zа-яА-Я@.]/g, "").toLowerCase();
+    if(!by[key]) by[key] = {name:o.name, phone:o.phone, email:o.email, city:o.addr, n:0, sum:0, last:0};
+    var c = by[key];
+    c.n++; c.sum += o.sum; if(o.ts > c.last){ c.last = o.ts; c.name = o.name; c.city = o.addr; }
+  });
+  return Object.keys(by).map(function(k){ return by[k]; })
+    .sort(function(a, b){ return b.sum - a.sum; });
+}
 
 function subscribed(id){
   for(var i=0;i<subs.length;i++) if(subs[i].id===id) return true;
@@ -2041,35 +2098,115 @@ function pageAdmin(){
   var revRows = [];
   for(var id in revs) revsOf(id).forEach(function(r){ revRows.push({id:id, r:r}); });
   revRows.sort(function(a,b){ return b.r.ts - a.r.ts; });
+
+  var live = inStock().length;
+  var newOrders = orders.filter(function(o){ return o.status === "Новый"; }).length;
+  var revenue = orders.filter(function(o){ return o.status !== "Отменён"; })
+                      .reduce(function(x,o){ return x + o.sum; }, 0);
+  var buyers = customers();
+
+  var cards = [["Позиций в наличии", live + " из " + P.length],
+               ["Заказов", orders.length + (newOrders ? " · новых " + newOrders : "")],
+               ["Сумма заказов", money(revenue)],
+               ["Покупателей", String(buyers.length)]]
+    .map(function(c){ return '<div class="admcard"><b>'+c[1]+'</b><span>'+c[0]+'</span></div>'; }).join("");
+
+  /* наличие: сортируем как в каталоге, чтобы искать глазами было привычно */
+  var stockRows = P.slice().sort(function(x,y){
+    return catRank(x.cat) - catRank(y.cat) || x.title.localeCompare(y.title, "ru");
+  }).map(function(p){
+    var mark = p.stock === 0 ? ["out","вернётся в сезон"]
+             : (p.stock <= 6 ? ["few","заканчивается"] : ["ok","в наличии"]);
+    return '<tr>'+
+      '<td>'+esc(p.title+" "+p.sub)+'<br><span class="muted" style="font-size:.74rem">'+esc(catName(p.cat))+' · '+esc(p.weight)+'</span></td>'+
+      '<td class="tnum">'+money(p.price)+'</td>'+
+      '<td><input class="stockin tnum" type="number" min="0" max="999" step="1" value="'+p.stock+'" data-stock="'+p.id+'" aria-label="Остаток"></td>'+
+      '<td><span class="stockmark '+mark[0]+'" data-stockmark>'+mark[1]+'</span></td>'+
+    '</tr>';
+  }).join("");
+
+  var orderRows = orders.slice().reverse().map(function(o){
+    var list = o.items.map(function(it){
+      return esc(it.title+" "+it.sub)+' × '+it.qty;
+    }).join('<br>');
+    return '<tr>'+
+      '<td class="tnum">№'+o.n+'<br><span class="muted" style="font-size:.74rem">'+dateRu(o.ts)+'</span></td>'+
+      '<td>'+esc(o.name||"—")+'<br><span class="muted" style="font-size:.74rem">'+esc(o.phone||o.email||"")+'</span></td>'+
+      '<td>'+list+'</td>'+
+      '<td>'+esc(o.ship||"—")+(o.addr ? '<br><span class="muted" style="font-size:.74rem">'+esc(o.addr)+'</span>' : '')+'</td>'+
+      '<td class="tnum">'+money(o.sum)+'</td>'+
+      '<td><select class="statusin" data-ostatus="'+o.n+'">'+
+        ORDER_STATUS.map(function(st){
+          return '<option'+(st===o.status?' selected':'')+'>'+st+'</option>';
+        }).join("")+'</select></td>'+
+    '</tr>';
+  }).join("");
+
+  var buyerRows = buyers.map(function(c){
+    return '<tr><td>'+esc(c.name||"—")+'</td><td>'+esc(c.phone||"")+(c.email?'<br><span class="muted" style="font-size:.74rem">'+esc(c.email)+'</span>':'')+'</td>'+
+      '<td>'+esc(c.city||"—")+'</td><td class="tnum">'+c.n+'</td><td class="tnum">'+money(c.sum)+'</td>'+
+      '<td>'+dateRu(c.last)+'</td></tr>';
+  }).join("");
+
   return ''+
   '<div class="page-hero"><div class="in">'+
     '<p class="eyebrow">Служебная страница</p>'+
-    '<h1>Что собрал сайт</h1>'+
-    '<p>Здесь видно, что оставили посетители: подписки на возврат сезонных позиций и отзывы. '+
-    'В демо данные лежат в браузере — на рабочем сайте это была бы админка или письмо на почту.</p>'+
+    '<h1>Панель управления</h1>'+
+    '<p>Так выглядела бы админка: наличие правится прямо здесь и сразу меняется на витрине, '+
+    'заказы и покупатели собираются из оформленных корзин. '+
+    '<b>В демо всё лежит в вашем браузере</b> — у каждого посетителя свои данные, и они исчезнут вместе с очисткой истории. '+
+    'На рабочем сайте это была бы закрытая паролем страница с базой на сервере.</p>'+
   '</div></div>'+
-  '<section class="sec"><div class="in adm">'+
-    '<div>'+
-      '<div class="head-row"><h2 style="font-size:1.4rem">Подписки на возврат</h2>'+
-        (subs.length ? '<button class="btn btn-out btn-sm" data-export="subs">Выгрузить CSV</button>' : '')+'</div>'+
-      (subs.length
-        ? '<div class="wrap-x"><table><thead><tr><th>Товар</th><th>Контакт</th><th>Когда</th></tr></thead><tbody>'+
-          subs.slice().reverse().map(function(x){
-            return '<tr><td>'+esc(x.title)+'</td><td>'+esc(x.contact)+'</td><td>'+dateRu(x.ts)+'</td></tr>';
-          }).join("")+'</tbody></table></div>'
-        : '<p class="emptyrev">Пока никто не подписался. Нажмите «Сообщить» у любой сезонной позиции.</p>')+
-    '</div>'+
-    '<div>'+
-      '<div class="head-row"><h2 style="font-size:1.4rem">Отзывы</h2>'+
-        (revRows.length ? '<button class="btn btn-out btn-sm" data-export="revs">Выгрузить CSV</button>' : '')+'</div>'+
-      (revRows.length
-        ? '<div class="wrap-x"><table><thead><tr><th>Товар</th><th>Оценка</th><th>Отзыв</th></tr></thead><tbody>'+
-          revRows.map(function(x){
-            var p = BY_ID[x.id];
-            return '<tr><td>'+(p? esc(p.title+" "+p.sub) : x.id)+'</td><td>'+x.r.rating+'/5</td>'+
-                   '<td>'+esc(x.r.name)+': '+esc(x.r.text)+'</td></tr>';
-          }).join("")+'</tbody></table></div>'
-        : '<p class="emptyrev">Отзывов пока нет.</p>')+
+
+  '<section class="sec"><div class="in">'+
+    '<div class="admcards">'+cards+'</div>'+
+
+    '<div class="head-row" style="margin-top:2.6rem"><h2 style="font-size:1.4rem">Наличие</h2>'+
+      '<button class="btn btn-out btn-sm" data-export="stock">Выгрузить CSV</button></div>'+
+    '<p class="muted" style="font-size:.84rem; margin:-.8rem 0 1rem">Поставьте 0 — товар уйдёт из продажи и получит плашку «Вернётся в сезон».</p>'+
+    '<div class="wrap-x"><table class="admtable">'+
+      '<thead><tr><th>Товар</th><th>Цена</th><th style="width:96px">Остаток</th><th>Статус</th></tr></thead>'+
+      '<tbody>'+stockRows+'</tbody></table></div>'+
+
+    '<div class="head-row" style="margin-top:2.6rem"><h2 style="font-size:1.4rem">Заказы</h2>'+
+      (orders.length ? '<button class="btn btn-out btn-sm" data-export="orders">Выгрузить CSV</button>' : '')+'</div>'+
+    (orders.length
+      ? '<div class="wrap-x"><table class="admtable">'+
+        '<thead><tr><th>Заказ</th><th>Покупатель</th><th>Состав</th><th>Доставка</th><th>Сумма</th><th style="width:130px">Статус</th></tr></thead>'+
+        '<tbody>'+orderRows+'</tbody></table></div>'
+      : '<p class="emptyrev">Заказов пока нет. Положите что-нибудь в корзину и оформите — заказ появится здесь.</p>')+
+
+    '<div class="head-row" style="margin-top:2.6rem"><h2 style="font-size:1.4rem">Покупатели</h2>'+
+      (buyers.length ? '<button class="btn btn-out btn-sm" data-export="customers">Выгрузить CSV</button>' : '')+'</div>'+
+    (buyers.length
+      ? '<div class="wrap-x"><table class="admtable">'+
+        '<thead><tr><th>Имя</th><th>Контакт</th><th>Город</th><th>Заказов</th><th>Сумма</th><th>Последний</th></tr></thead>'+
+        '<tbody>'+buyerRows+'</tbody></table></div>'
+      : '<p class="emptyrev">Список собирается из заказов — отдельно покупателей никто не заводит.</p>')+
+
+    '<div class="adm" style="margin-top:2.6rem">'+
+      '<div>'+
+        '<div class="head-row"><h2 style="font-size:1.4rem">Подписки на возврат</h2>'+
+          (subs.length ? '<button class="btn btn-out btn-sm" data-export="subs">Выгрузить CSV</button>' : '')+'</div>'+
+        (subs.length
+          ? '<div class="wrap-x"><table><thead><tr><th>Товар</th><th>Контакт</th><th>Когда</th></tr></thead><tbody>'+
+            subs.slice().reverse().map(function(x){
+              return '<tr><td>'+esc(x.title)+'</td><td>'+esc(x.contact)+'</td><td>'+dateRu(x.ts)+'</td></tr>';
+            }).join("")+'</tbody></table></div>'
+          : '<p class="emptyrev">Пока никто не подписался. Нажмите «Сообщить» у любой сезонной позиции.</p>')+
+      '</div>'+
+      '<div>'+
+        '<div class="head-row"><h2 style="font-size:1.4rem">Отзывы</h2>'+
+          (revRows.length ? '<button class="btn btn-out btn-sm" data-export="revs">Выгрузить CSV</button>' : '')+'</div>'+
+        (revRows.length
+          ? '<div class="wrap-x"><table><thead><tr><th>Товар</th><th>Оценка</th><th>Отзыв</th></tr></thead><tbody>'+
+            revRows.map(function(x){
+              var p = BY_ID[x.id];
+              return '<tr><td>'+(p? esc(p.title+" "+p.sub) : x.id)+'</td><td>'+x.r.rating+'/5</td>'+
+                     '<td>'+esc(x.r.name)+': '+esc(x.r.text)+'</td></tr>';
+            }).join("")+'</tbody></table></div>'
+          : '<p class="emptyrev">Отзывов пока нет.</p>')+
+      '</div>'+
     '</div>'+
   '</div></section>';
 }
@@ -2107,17 +2244,17 @@ function pageCart(){
       '<div>'+
         '<h3 style="font-size:1.3rem">Оформление заказа</h3>'+
         '<form class="form" id="order">'+
-          '<label class="wide">Имя и фамилия<input required placeholder="Анна Иванова"></label>'+
-          '<label>Телефон<input required type="tel" placeholder="+7 900 000-00-00"></label>'+
-          '<label>Почта<input type="email" placeholder="anna@mail.ru"></label>'+
+          '<label class="wide">Имя и фамилия<input name="name" required placeholder="Анна Иванова"></label>'+
+          '<label>Телефон<input name="phone" required type="tel" placeholder="+7 900 000-00-00"></label>'+
+          '<label>Почта<input name="email" type="email" placeholder="anna@mail.ru"></label>'+
           '<label class="wide">Способ получения'+
-            '<select><option>СДЭК до пункта выдачи</option><option>СДЭК курьером</option><option>Самовывоз из Переслегино</option></select>'+
+            '<select name="ship"><option>СДЭК до пункта выдачи</option><option>СДЭК курьером</option><option>Самовывоз из Переслегино</option></select>'+
           '</label>'+
-          '<label class="wide">Город и адрес<input placeholder="Санкт-Петербург, ул. ..."></label>'+
-          '<label class="wide">Комментарий<textarea rows="3" placeholder="Например: упаковать как подарок"></textarea></label>'+
+          '<label class="wide">Город и адрес<input name="addr" placeholder="Санкт-Петербург, ул. ..."></label>'+
+          '<label class="wide">Комментарий<textarea name="note" rows="3" placeholder="Например: упаковать как подарок"></textarea></label>'+
           '<button class="btn btn-primary wide" type="submit">Оформить заказ на '+money(cartTotal())+'</button>'+
         '</form>'+
-        '<p class="formnote">Это демо-макет: форма ничего никуда не отправляет и не сохраняет ваши данные. На настоящем сайте здесь была бы оплата и передача заказа в СДЭК.</p>'+
+        '<p class="formnote">Это демо-макет: заказ никуда не уходит и не оплачивается. Он сохранится только в этом браузере, чтобы его было видно в <a href="#/admin">служебной странице</a> — так работал бы приём заказов на настоящем сайте.</p>'+
       '</div>'+
     '</div>'+
   '</div>';
@@ -2512,6 +2649,28 @@ document.addEventListener("input",function(e){
   if(e.target.id==="q"){ CAT_STATE.q=e.target.value; renderGrid(); }
 });
 document.addEventListener("change",function(e){
+  if(e.target.hasAttribute && e.target.hasAttribute("data-stock")){
+    var sid = e.target.getAttribute("data-stock");
+    setStock(sid, parseInt(e.target.value, 10) || 0);
+    var row = e.target.closest("tr");
+    if(row){
+      var mark = row.querySelector("[data-stockmark]");
+      if(mark){
+        var st = BY_ID[sid].stock;
+        mark.textContent = st === 0 ? "вернётся в сезон" : (st <= 6 ? "заканчивается" : "в наличии");
+        mark.className = "stockmark " + (st === 0 ? "out" : (st <= 6 ? "few" : "ok"));
+      }
+    }
+    toast("Наличие обновлено: "+BY_ID[sid].title.toLowerCase()+" — "+BY_ID[sid].stock);
+    return;
+  }
+  if(e.target.hasAttribute && e.target.hasAttribute("data-ostatus")){
+    var on = parseInt(e.target.getAttribute("data-ostatus"), 10);
+    orders.forEach(function(o){ if(o.n === on) o.status = e.target.value; });
+    save(ORDERS_KEY, orders);
+    toast("Заказ №"+on+" — "+e.target.value);
+    return;
+  }
   if(e.target.id==="sort"){ CAT_STATE.sort=e.target.value; renderGrid(); }
   if(e.target.id==="only"){
     CAT_STATE.only=e.target.checked;
@@ -2522,12 +2681,22 @@ document.addEventListener("change",function(e){
 document.addEventListener("submit",function(e){
   e.preventDefault();
   if(e.target.id==="order"){
+    var f = e.target.elements;
+    var val = function(k){ return f[k] && f[k].value ? f[k].value.trim() : ""; };
+    var items = Object.keys(cart).map(function(id){
+      var p = entry(id); if(!p) return null;
+      return {id:id, title:p.title, sub:p.sub, weight:p.weight, qty:cart[id], price:p.price};
+    }).filter(Boolean);
+    var num = addOrder({ts:Date.now(), name:val("name"), phone:val("phone"), email:val("email"),
+      ship:val("ship"), addr:val("addr"), note:val("note"),
+      items:items, sum:cartTotal(), status:"Новый"});
     cart={}; saveCart(cart); paintCart();
     app.innerHTML='<div class="in"><div class="empty">'+
-      '<h2>Спасибо! Но это демо</h2>'+
-      '<p style="max-width:46ch; margin:.6rem auto 0">Заказ не оформлен и никуда не отправлен — перед вами макет сайта, а не работающий магазин. '+
+      '<h2>Заказ №'+num+' принят</h2>'+
+      '<p style="max-width:48ch; margin:.6rem auto 0">Но это макет: заказ никуда не отправлен и не оплачен. '+
+      'Он лёг в <a href="#/admin">служебную страницу</a> — там видно состав, покупателя и как уменьшился остаток. '+
       'Настоящий заказ можно сделать на действующем сайте lesnaya-yagodka.ru.</p>'+
-      '<a class="btn btn-primary" style="margin-top:1.4rem" href="#/catalog">Вернуться в каталог</a></div></div>';
+      '<a class="btn btn-primary" style="margin-top:1.4rem" href="#/admin">Открыть служебную страницу</a></div></div>';
     window.scrollTo(0,0);
   }
   if(e.target.id==="subform"){
@@ -2572,7 +2741,25 @@ document.getElementById("burger").addEventListener("click",function(){
 /* выгрузка: если доступно сохранение файла — сохраняем, иначе показываем текст */
 async function exportCsv(kind){
   var rows, name;
-  if(kind==="subs"){
+  if(kind==="stock"){
+    name = "nalichie.csv";
+    rows = [["Товар","Категория","Вес","Цена","Остаток"]].concat(P.map(function(p){
+      return [p.title+" "+p.sub, catName(p.cat), p.weight, p.price, p.stock];
+    }));
+  } else if(kind==="orders"){
+    name = "zakazy.csv";
+    rows = [["Заказ","Дата","Имя","Телефон","Почта","Доставка","Адрес","Состав","Сумма","Статус"]].concat(
+      orders.map(function(o){
+        return ["№"+o.n, new Date(o.ts).toISOString().slice(0,10), o.name, o.phone, o.email, o.ship, o.addr,
+                o.items.map(function(it){ return it.title+" "+it.sub+" x"+it.qty; }).join("; "), o.sum, o.status];
+      }));
+  } else if(kind==="customers"){
+    name = "pokupateli.csv";
+    rows = [["Имя","Телефон","Почта","Город","Заказов","Сумма","Последний заказ"]].concat(
+      customers().map(function(c){
+        return [c.name, c.phone, c.email, c.city, c.n, c.sum, new Date(c.last).toISOString().slice(0,10)];
+      }));
+  } else if(kind==="subs"){
     name = "podpiski.csv";
     rows = [["Товар","Контакт","Дата"]].concat(subs.map(function(x){
       return [x.title, x.contact, new Date(x.ts).toISOString().slice(0,10)];
