@@ -1,0 +1,167 @@
+/* ============================================================
+   «Лесная ягодка» — стили для магазинных блоков Tilda
+   Написано под разметку действующего сайта lesnaya-yagodka.ru:
+   каталог — блок T951, корзина — T706.
+   Приводит родные блоки к виду прототипа, не трогая остальное.
+   ============================================================ */
+
+:root{
+  --ly-paper:#EDE9DF;
+  --ly-sand:#E1DBCC;
+  --ly-card:#F7F5EE;
+  --ly-ink:#191D18;
+  --ly-ink-2:#3D453B;
+  --ly-muted:#5F675C;
+  --ly-line:#D6D0C1;
+  --ly-line-2:#E4DFD2;
+  --ly-green:#2E3A2C;
+  --ly-green-deep:#161C15;
+  --ly-berry:#6E2436;
+  --ly-serif:"Spectral",Georgia,"Times New Roman",serif;
+  --ly-sans:"Golos Text",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+
+/* ---------- СЕТКА КАТАЛОГА ---------- */
+.t-store__grid-cont{ gap:1.4rem }
+.t-store .t-store__card{
+  background:var(--ly-card);
+  border:1px solid var(--ly-line);
+  border-radius:3px;
+  overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.t-store .t-store__card:hover{
+  border-color:var(--ly-muted);
+  transform:scale(1.03);
+  box-shadow:0 26px 48px -34px rgba(25,29,24,.6);
+}
+@media(hover:none){ .t-store .t-store__card:hover{ transform:none; box-shadow:none } }
+
+/* фотографии сняты на светлом фоне — вписываем целиком, не кадрируем */
+.t-store .t-store__card__imgwrapper{ background:#FFFFFF }
+.t-store .t-store__card__img{ background-size:contain !important }
+
+/* ---------- ТЕКСТ КАРТОЧКИ ---------- */
+.t-store .t-store__card__textwrapper{ padding:1.05rem 1.1rem 1.15rem }
+
+.t-store .t-store__card__title,
+.t-store .t-store__card__title.t-name{
+  font-family:var(--ly-serif) !important;
+  font-weight:400 !important;
+  font-size:1.18rem !important;
+  line-height:1.25 !important;
+  color:var(--ly-ink) !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+}
+
+.t-store .t-store__card__descr,
+.t-store .t-store__card__descr.t-descr{
+  font-family:var(--ly-sans) !important;
+  font-size:.82rem !important;
+  line-height:1.4 !important;
+  color:var(--ly-muted) !important;
+  margin-top:.35rem !important;
+}
+
+.t-store .t-store__card__sku{
+  font-family:var(--ly-sans) !important;
+  font-size:.7rem !important;
+  letter-spacing:.1em !important;
+  text-transform:uppercase !important;
+  color:var(--ly-muted) !important;
+}
+
+/* ---------- ЦЕНА ---------- */
+.t-store .t-store__card__price-wrapper{
+  margin-top:.8rem !important;
+  padding-top:.75rem !important;
+  border-top:1px solid var(--ly-line-2);
+}
+.t-store .t-store__card__price,
+.t-store .t-store__card__price.t-name{
+  font-family:var(--ly-serif) !important;
+  font-weight:400 !important;
+  font-size:1.28rem !important;
+  color:var(--ly-ink) !important;
+  font-variant-numeric:tabular-nums;
+}
+.t-store .t-store__card__price_old{
+  font-family:var(--ly-sans) !important;
+  font-size:.86rem !important;
+  color:var(--ly-muted) !important;
+}
+
+/* ---------- «НЕТ В НАЛИЧИИ» ---------- */
+/* сезонность — часть характера бренда, поэтому метка заметная, а не серая */
+.t-store .t-store__card__sold-out-msg{
+  display:inline-block;
+  background:#8A2333 !important;
+  color:#F4EAEA !important;
+  font-family:var(--ly-sans) !important;
+  font-size:.6rem !important;
+  letter-spacing:.07em !important;
+  text-transform:uppercase !important;
+  font-weight:600 !important;
+  padding:.45rem .75rem !important;
+  border-radius:2px;
+}
+
+/* ---------- КНОПКА ---------- */
+.t-store .t-store__card__btn,
+.t-store .t-store__card__btn.t-btn{
+  background:var(--ly-green) !important;
+  border:1px solid var(--ly-green) !important;
+  border-radius:2px !important;
+  color:#F2EFE6 !important;
+  font-family:var(--ly-sans) !important;
+  font-size:.68rem !important;
+  letter-spacing:.11em !important;
+  text-transform:uppercase !important;
+  font-weight:600 !important;
+  transition:background-color .15s ease, transform .15s ease;
+}
+.t-store .t-store__card__btn:hover{ background:var(--ly-green-deep) !important }
+.t-store .t-store__card__btn:active{ transform:scale(.96) }
+
+/* ---------- КОРЗИНА (T706) ---------- */
+.t706 .t-store__card__title,
+.t706 .t706__cartwin-heading{
+  font-family:var(--ly-serif) !important;
+  font-weight:400 !important;
+  color:var(--ly-ink) !important;
+}
+.t706 .t706__cartwin-content{ background:var(--ly-paper) !important }
+.t706 .t706__cartwin-totalamount-wrap{
+  font-family:var(--ly-serif) !important;
+  color:var(--ly-ink) !important;
+}
+.t706 .t-form__submit .t-submit,
+.t706 .t-btn{
+  background:var(--ly-green) !important;
+  border-radius:2px !important;
+  color:#F2EFE6 !important;
+  font-family:var(--ly-sans) !important;
+  letter-spacing:.11em !important;
+  text-transform:uppercase !important;
+  font-weight:600 !important;
+}
+.t706 .t-input,
+.t706 .t-select{
+  background:var(--ly-card) !important;
+  border:1px solid var(--ly-line) !important;
+  border-radius:2px !important;
+  font-family:var(--ly-sans) !important;
+  color:var(--ly-ink) !important;
+}
+
+/* ---------- ФИЛЬТРЫ И СОРТИРОВКА ---------- */
+.t-store__filter__item-title,
+.t-store__sort-wrapper{
+  font-family:var(--ly-sans) !important;
+  color:var(--ly-muted) !important;
+}
+.t-store__filter__opts-title{
+  font-family:var(--ly-serif) !important;
+  color:var(--ly-ink) !important;
+}
