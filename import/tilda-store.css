@@ -24,8 +24,10 @@
 /* ---------- СЕТКА КАТАЛОГА ---------- */
 .t-store__grid-cont{ gap:1.4rem }
 .t-store .t-store__card{
-  background:var(--ly-card);
-  border:1px solid var(--ly-line);
+  /* стили Tilda приходят из её же CSS и часто выигрывают по специфичности,
+     поэтому здесь и ниже приходится ставить !important */
+  background:var(--ly-card) !important;
+  border:1px solid var(--ly-line) !important;
   border-radius:3px;
   overflow:hidden;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
@@ -108,10 +110,16 @@
 }
 
 /* ---------- КНОПКА ---------- */
+/* кнопку красит правило вида #recNNNNNN .t-btnflex — бьём по тому же элементу */
 .t-store .t-store__card__btn,
-.t-store .t-store__card__btn.t-btn{
+.t-store .t-store__card__btn.t-btn,
+.t-store .t-store__card__btn.t-btnflex,
+.t-store .t-btnflex.t-btnflex_type_button{
   background:var(--ly-green) !important;
-  border:1px solid var(--ly-green) !important;
+  background-color:var(--ly-green) !important;
+  border-style:solid !important;
+  border-width:1px !important;
+  border-color:var(--ly-green) !important;
   border-radius:2px !important;
   color:#F2EFE6 !important;
   font-family:var(--ly-sans) !important;
@@ -121,8 +129,13 @@
   font-weight:600 !important;
   transition:background-color .15s ease, transform .15s ease;
 }
-.t-store .t-store__card__btn:hover{ background:var(--ly-green-deep) !important }
+.t-store .t-store__card__btn:hover,
+.t-store .t-btnflex.t-btnflex_type_button:hover{
+  background:var(--ly-green-deep) !important;
+  background-color:var(--ly-green-deep) !important;
+}
 .t-store .t-store__card__btn:active{ transform:scale(.96) }
+.t-store .t-btnflex__text{ color:inherit !important }
 
 /* ---------- КОРЗИНА (T706) ---------- */
 .t706 .t-store__card__title,
